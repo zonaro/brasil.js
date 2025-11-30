@@ -34,7 +34,13 @@ Cada cidade possui as seguintes propriedades:
 - `capital`: Booleano indicando se é capital
 - `altitude`: Altitude em metros
 - `timeZone`: Fuso horário
-- E outras informações como SIAFI, microregião, etc.
+- `siafi`: Sistema integrado de Administração Financeira
+- `microRegiao`: Microrregião
+- `macroRegiao`: Macrorregião
+- `exclusivaSedeUrbana`: Booleano indicando se é sede urbana exclusiva
+- `codigoGeograficoSubdivisao`: Código geográfico da subdivisão
+- `codigoGeograficoDistrito`: Código geográfico do distrito
+
 
 ### Exemplos
 
