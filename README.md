@@ -9,7 +9,7 @@ Biblioteca JavaScript com dados completos de todas as cidades e estados do Brasi
 Inclua o script diretamente no seu HTML:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/brasil.js@latest/brasil.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/zonaro/brasil.js@master/brasil.js"></script>
 ```
 
 Isso carregará a biblioteca globalmente, tornando o objeto `window.brasil` disponível.
