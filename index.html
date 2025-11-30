@@ -19,6 +19,7 @@
         <div class="mb-3">
             <label for="cidade-select" class="form-label">Selecione uma cidade:</label>
             <select id="cidade-select" style="width: 100%;"></select>
+            <button id="local-btn" class="btn btn-primary mt-2">Usar Minha Localização</button>
         </div>
         <div id="cidade-card" class="card" style="display: none;">
             <div class="card-body">
@@ -81,6 +82,36 @@
             // Evento de limpar
             $('#cidade-select').on('select2:clear', function () {
                 $('#cidade-card').hide();
+            });
+
+            // Evento do botão de localização
+            $('#local-btn').on('click', function () {
+                window.brasil.aqui().then(cidade => {
+                    if (cidade) {
+                        $('#cidade-select').select2('data', { id: cidade.ibge, text: cidade.nome + ' - ' + cidade.uf });
+                        $('#cidade-nome').text(cidade.nome);
+                        $('#cidade-info').html(`
+                            <strong>UF:</strong> ${cidade.uf}<br>
+                            <strong>Estado:</strong> ${cidade.estado}<br>
+                            <strong>Região:</strong> ${cidade.regiao}<br>
+                            <strong>IBGE:</strong> ${cidade.ibge}<br>
+                            <strong>DDD:</strong> ${cidade.ddd}<br>
+                            <strong>Latitude:</strong> ${cidade.latitude}<br>
+                            <strong>Longitude:</strong> ${cidade.longitude}<br>
+                            <strong>Altitude:</strong> ${cidade.altitude} m<br>
+                            <strong>CEP Inicial:</strong> ${cidade.cepInicial}<br>
+                            <strong>CEP Final:</strong> ${cidade.cepFinal}
+                        `);
+                        const mapa = window.brasil.googleMapsEmbedded(cidade, 600, 400);
+                        $('#mapa-container').empty().append(mapa);
+                        $('#cidade-card').show();
+                    } else {
+                        alert('Não foi possível determinar a localização');
+                    }
+                }).catch(error => {
+                    console.error('Erro ao obter localização:', error);
+                    alert('Erro ao obter localização');
+                });
             });
         });
     </script>
