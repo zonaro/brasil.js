@@ -122573,11 +122573,11 @@ window.brasil = {
 		else {
 
 			// Primeiro, busca cidades por nome, regiao ou ibge
-			let results = cidades.filter(c => normalize(c.nome).includes(param) || normalize(c.regiao).includes(param) || c.ibge.toString().startsWith(param));
+			let results = this.cidades.filter(c => normalize(c.nome).includes(param) || normalize(c.regiao).includes(param) || c.ibge.toString().startsWith(param));
 
 			// quando nao encontra, procura pelo nome do estado, evita conflitos quando nome da cidade e nome de estados são iguais
 			if (results.length === 0) {
-				results = cidades.filter(c => normalize(c.estado).includes(param));
+				results = this.cidades.filter(c => normalize(c.estado).includes(param));
 			}
 
 			// Se não encontrou, usar Levenshtein no nome da cidade
@@ -122635,11 +122635,10 @@ window.brasil = {
 		}
 		// Converter para número se for string
 		const latitude = parseFloat(lat);
-		const longitude = parseFloat(lng);
-		const cidades = this.cidades;
+		const longitude = parseFloat(lng);	 
 		let minDist = Infinity;
 		let closest = null;
-		cidades.forEach(c => {
+		this.cidades.forEach(c => {
 			const dist = haversine(latitude, longitude, c.latitude, c.longitude);
 			if (dist < minDist) {
 				minDist = dist;
