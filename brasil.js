@@ -122543,9 +122543,9 @@ window.brasil = {
 			siafi: "0950"
 		}
 	],
-	pesquisarCidade: function (param) {
+	pesquisarCidade: function (param, threshold) {
 		const cidades = this.cidades;
-
+threshold = threshold||3;
 		let numParam = null;
 		if (typeof param === 'string') {
 			const cleaned = param.replace(/[^\d]/g, ''); // remove non-digits
@@ -122607,7 +122607,6 @@ window.brasil = {
 						return matrix[b.length][a.length];
 					};
 
-					const threshold = 2;
 					const fuzzyResults = cidades.map(c => ({
 						cidade: c,
 						dist: levenshtein(normalize(c.nome), normalizedParam)
