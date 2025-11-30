@@ -122567,7 +122567,12 @@ window.brasil = {
 			} else {
 
 				// Primeiro, busca exata (contains)
-				let results = cidades.filter(c => normalize(c.nome).includes(param) || normalize(c.estado).includes(param) || normalize(c.regiao).includes(param) || normalize(c.uf).includes(param) || c.ibge.toString() === param || c.ibgeEstado.toString() === param);
+				let results = cidades.filter(c => normalize(c.nome).includes(param) ||  normalize(c.regiao).includes(param) || normalize(c.uf).includes(param) || c.ibge.toString() === param || c.ibgeEstado.toString() === param);
+
+				// quando nao encontra cidades, procura pelo nome do estado, evita conflitos quando cidades e estados tem o mesmo nome
+				if(results.length === 0) {
+					results = cidades.filter(c => normalize(c.estado).includes(param));
+				}
 
 				// Se não encontrou, usar Levenshtein
 				if (results.length === 0 && threshold > 0) {
@@ -122597,7 +122602,7 @@ window.brasil = {
 
 					const fuzzyResults = cidades.map(c => ({
 						cidade: c,
-						dist: levenshtein(normalize(c.nome), normalizedParam)
+						dist: levenshtein(normalize(c.nome), param)
 					})).filter(item => item.dist <= threshold).sort((a, b) => a.dist - b.dist);
 					results = fuzzyResults.map(item => item.cidade);
 				}
