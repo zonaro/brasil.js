@@ -122542,15 +122542,147 @@ window.brasil = {
 			ibge: 4219853,
 			siafi: "0950"
 		}
-	]
+	],
+	pesquisarCidade: function (param) {
+		const cidades = this.cidades;
+
+		let numParam = null;
+		if (typeof param === 'string') {
+			const cleaned = param.replace(/[^\d]/g, ''); // remove non-digits
+			if (cleaned.length === 2 && param.length === 2 && param === param.toUpperCase()) {
+				// UF
+				return cidades.filter(c => c.capital && c.uf === param);
+			} else if (cleaned.length === 2) {
+				// IBGE estado
+				numParam = parseInt(cleaned);
+				return cidades.filter(c => c.capital && c.ibgeEstado === numParam);
+			} else if (cleaned.length === 7) {
+				// IBGE cidade
+				numParam = parseInt(cleaned);
+				return cidades.filter(c => c.ibge === numParam);
+			} else if (cleaned.length === 8) {
+				// CEP
+				numParam = parseInt(cleaned);
+				return cidades.filter(c => c.cepInicial <= numParam && numParam <= c.cepFinal);
+			} else {
+				// nome, fuzzy search
+
+				function levenshtein(a, b) {
+					const matrix = [];
+					for (let i = 0; i <= b.length; i++) {
+						matrix[i] = [i];
+					}
+					for (let j = 0; j <= a.length; j++) {
+						matrix[0][j] = j;
+					}
+					for (let i = 1; i <= b.length; i++) {
+						for (let j = 1; j <= a.length; j++) {
+							if (b.charAt(i - 1) === a.charAt(j - 1)) {
+								matrix[i][j] = matrix[i - 1][j - 1];
+							} else {
+								matrix[i][j] = Math.min(
+									matrix[i - 1][j - 1] + 1,
+									matrix[i - 1][j] + 1,
+									matrix[i][j - 1] + 1
+								);
+							}
+						}
+					}
+					return matrix[b.length][a.length];
+				};
+
+				const threshold = 2;
+				const results = cidades.map(c => ({
+					cidade: c,
+					dist: levenshtein(c.nome.toLowerCase(), param.toLowerCase())
+				})).filter(item => item.dist <= threshold).sort((a, b) => a.dist - b.dist);
+				return results.map(item => item.cidade);
+			}
+		} else if (typeof param === 'number') {
+			const str = param.toString();
+			if (str.length === 2) {
+				// IBGE estado
+				return cidades.filter(c => c.capital && c.ibgeEstado === param);
+			} else if (str.length === 7) {
+				// IBGE cidade
+				return cidades.filter(c => c.ibge === param);
+			} else if (str.length === 8) {
+				// CEP
+				return cidades.filter(c => c.cepInicial <= param && param <= c.cepFinal);
+			}
+		}
+		return [];
+	},
+	pegarCidade: function (param) {
+		const resultados = this.pesquisarCidade(param);
+		return resultados.length > 0 ? resultados[0] : null;
+	},
+	cidadeProxima: function (lat, lng) {
+		function haversine(lat1, lon1, lat2, lon2) {
+			const R = 6371; // Raio da Terra em km
+			const dLat = (lat2 - lat1) * Math.PI / 180;
+			const dLon = (lon1 - lon2) * Math.PI / 180;
+			const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+				Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+				Math.sin(dLon / 2) * Math.sin(dLon / 2);
+			const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+			return R * c;
+		}
+		// Converter para número se for string
+		const latitude = parseFloat(lat);
+		const longitude = parseFloat(lng);
+		const cidades = this.cidades;
+		let minDist = Infinity;
+		let closest = null;
+		cidades.forEach(c => {
+			const dist = haversine(latitude, longitude, c.latitude, c.longitude);
+			if (dist < minDist) {
+				minDist = dist;
+				closest = c;
+			}
+		});
+		return closest;
+	},
+	aqui: async function () {
+		// Obter localização atual
+		const pos = await new Promise((resolve, reject) => {
+			if (!navigator.geolocation) {
+				reject(new Error('Geolocalização não suportada'));
+			}
+			navigator.geolocation.getCurrentPosition(resolve, reject);
+		});
+		const latitude = pos.coords.latitude;
+		const longitude = pos.coords.longitude;
+		return this.cidadeProxima(latitude, longitude);
+	},
+	googleMapsUrl: function(cidade) {
+		if (!cidade || !cidade.latitude || !cidade.longitude) return null;
+		return `https://maps.google.com/maps?q=${cidade.latitude},${cidade.longitude}`;
+	},
+	googleMapsEmbedded: function(cidade,width,height) {
+		width = width || 600;
+		height = height || 450;
+		if (!cidade || !cidade.latitude || !cidade.longitude) return null;
+		const iframe = document.createElement('iframe');
+		iframe.src = `${this.googleMapsUrl(cidade)}&output=embed`;
+		iframe.width = width;
+		iframe.height = height;
+		iframe.frameBorder = '0';
+		iframe.style.border = '0';
+		iframe.allowFullscreen = true;
+		return iframe;
+	}
+	
 }
 
 window.brasil.estados = Array.from(
-	new Map(
-		window.brasil.cidades.map(c => [c.ibgeEstado, {
-			nome: c.estado,
-			uf: c.uf,
-			ibge: c.ibgeEstado
-		}])
-	).values()
-);
+		new Map(
+			window.brasil.cidades.map(c => [c.ibgeEstado, {
+				nome: c.estado,
+				uf: c.uf,
+				ibge: c.ibgeEstado
+			}])
+		).values()
+	);
+
+	console.log('Brasil.js carregado com ' + window.brasil.cidades.length + ' cidades e ' + window.brasil.estados.length + ' estados.');
