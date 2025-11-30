@@ -122550,21 +122550,21 @@ window.brasil = {
 		if (typeof param === 'string') {
 
 			function normalize(str) {
-					return str
-						.toLowerCase()
-						.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
-						.replace(/[^a-z0-9\s]/g, '') // remove caracteres especiais
-						.replace(/\s+/g, ' ') // normalizar espaços
-						.trim();
-				}
+				return str
+					.toLowerCase()
+					.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+					.replace(/[^a-z0-9\s]/g, '') // remove caracteres especiais
+					.replace(/\s+/g, ' ') // normalizar espaços
+					.trim();
+			}
 
 			param = normalize(param);
-			 
-			  if (param.length === 8 && /^\d+$/.test(param)) {
+
+			if (param.length === 8 && /^\d+$/.test(param)) {
 				// CEP
 				numParam = parseInt(param);
 				return cidades.filter(c => c.cepInicial <= numParam && numParam <= c.cepFinal);
-			} else {				 			
+			} else {
 
 				// Primeiro, busca exata (contains)
 				let results = cidades.filter(c => normalize(c.nome).includes(param) || normalize(c.estado).includes(param) || normalize(c.regiao).includes(param) || normalize(c.uf).includes(param) || c.ibge.toString() === param || c.ibgeEstado.toString() === param);
@@ -122693,10 +122693,10 @@ window.brasil.estados = Array.from(
 );
 
 window.brasil.regioes = Array.from(
-	 // array com as regioes sem ser map duplicadas
+	// array com as regioes sem ser map duplicadas
 	new Map(
 		window.brasil.estados.map(e => [e.regiao, e.regiao])
 	).values()
 );
 
-console.log('Brasil.js carregado com ' + window.brasil.cidades.length + ' cidades e ' + window.brasil.estados.length + ' estados.');
+console.log('Brasil.js carregado');
