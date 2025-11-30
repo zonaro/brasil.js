@@ -122582,7 +122582,7 @@ window.brasil = {
 				let results = cidades.filter(c => normalize(c.nome).includes(normalizedParam));
 
 				// Se não encontrou, usar Levenshtein
-				if (results.length === 0) {
+				if (results.length === 0 && threshold > 0) {
 					function levenshtein(a, b) {
 						const matrix = [];
 						for (let i = 0; i <= b.length; i++) {
