@@ -40,9 +40,9 @@
                 ajax: {
                     transport: function (params, success, failure) {
                         const term = params.data.term || '';
-                        const results = window.brasil.pesquisarCidade(term);
+                        const results = window.brasil.pesquisarCidade(term, 3);
                         success({
-                            results: results.map(c => ({ id: c.ibge, text: c.nome }))
+                            results: results.map(c => ({ id: c.ibge, text: c.nome + ' - ' + c.uf }))
                         });
                     },
                     processResults: function (data) {
