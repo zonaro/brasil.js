@@ -122567,36 +122567,55 @@ window.brasil = {
 			} else {
 				// nome, fuzzy search
 
-				function levenshtein(a, b) {
-					const matrix = [];
-					for (let i = 0; i <= b.length; i++) {
-						matrix[i] = [i];
-					}
-					for (let j = 0; j <= a.length; j++) {
-						matrix[0][j] = j;
-					}
-					for (let i = 1; i <= b.length; i++) {
-						for (let j = 1; j <= a.length; j++) {
-							if (b.charAt(i - 1) === a.charAt(j - 1)) {
-								matrix[i][j] = matrix[i - 1][j - 1];
-							} else {
-								matrix[i][j] = Math.min(
-									matrix[i - 1][j - 1] + 1,
-									matrix[i - 1][j] + 1,
-									matrix[i][j - 1] + 1
-								);
+				function normalize(str) {
+					return str
+						.toLowerCase()
+						.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+						.replace(/[^a-z\s]/g, '') // remove caracteres especiais e números
+						.replace(/\s+/g, ' ') // normalizar espaços
+						.trim();
+				}
+
+				const normalizedParam = normalize(param);
+
+				// Primeiro, busca exata (contains)
+				let results = cidades.filter(c => normalize(c.nome).includes(normalizedParam));
+
+				// Se não encontrou, usar Levenshtein
+				if (results.length === 0) {
+					function levenshtein(a, b) {
+						const matrix = [];
+						for (let i = 0; i <= b.length; i++) {
+							matrix[i] = [i];
+						}
+						for (let j = 0; j <= a.length; j++) {
+							matrix[0][j] = j;
+						}
+						for (let i = 1; i <= b.length; i++) {
+							for (let j = 1; j <= a.length; j++) {
+								if (b.charAt(i - 1) === a.charAt(j - 1)) {
+									matrix[i][j] = matrix[i - 1][j - 1];
+								} else {
+									matrix[i][j] = Math.min(
+										matrix[i - 1][j - 1] + 1,
+										matrix[i - 1][j] + 1,
+										matrix[i][j - 1] + 1
+									);
+								}
 							}
 						}
-					}
-					return matrix[b.length][a.length];
-				};
+						return matrix[b.length][a.length];
+					};
 
-				const threshold = 2;
-				const results = cidades.map(c => ({
-					cidade: c,
-					dist: levenshtein(c.nome.toLowerCase(), param.toLowerCase())
-				})).filter(item => item.dist <= threshold).sort((a, b) => a.dist - b.dist);
-				return results.map(item => item.cidade);
+					const threshold = 2;
+					const fuzzyResults = cidades.map(c => ({
+						cidade: c,
+						dist: levenshtein(normalize(c.nome), normalizedParam)
+					})).filter(item => item.dist <= threshold).sort((a, b) => a.dist - b.dist);
+					results = fuzzyResults.map(item => item.cidade);
+				}
+
+				return results;
 			}
 		} else if (typeof param === 'number') {
 			const str = param.toString();
@@ -122655,11 +122674,11 @@ window.brasil = {
 		const longitude = pos.coords.longitude;
 		return this.cidadeProxima(latitude, longitude);
 	},
-	googleMapsUrl: function(cidade) {
+	googleMapsUrl: function (cidade) {
 		if (!cidade || !cidade.latitude || !cidade.longitude) return null;
 		return `https://maps.google.com/maps?q=${cidade.latitude},${cidade.longitude}`;
 	},
-	googleMapsEmbedded: function(cidade,width,height) {
+	googleMapsEmbedded: function (cidade, width, height) {
 		width = width || 600;
 		height = height || 450;
 		if (!cidade || !cidade.latitude || !cidade.longitude) return null;
@@ -122672,17 +122691,17 @@ window.brasil = {
 		iframe.allowFullscreen = true;
 		return iframe;
 	}
-	
+
 }
 
 window.brasil.estados = Array.from(
-		new Map(
-			window.brasil.cidades.map(c => [c.ibgeEstado, {
-				nome: c.estado,
-				uf: c.uf,
-				ibge: c.ibgeEstado
-			}])
-		).values()
-	);
+	new Map(
+		window.brasil.cidades.map(c => [c.ibgeEstado, {
+			nome: c.estado,
+			uf: c.uf,
+			ibge: c.ibgeEstado
+		}])
+	).values()
+);
 
-	console.log('Brasil.js carregado com ' + window.brasil.cidades.length + ' cidades e ' + window.brasil.estados.length + ' estados.');
+console.log('Brasil.js carregado com ' + window.brasil.cidades.length + ' cidades e ' + window.brasil.estados.length + ' estados.');
