@@ -122545,7 +122545,7 @@ window.brasil = {
 	],
 	pesquisarCidade: function (param, threshold) {
 		const cidades = this.cidades;
-threshold = threshold||3;
+		threshold = threshold || 3;
 		let numParam = null;
 		if (typeof param === 'string') {
 			const cleaned = param.replace(/[^\d]/g, ''); // remove non-digits
