@@ -38,64 +38,87 @@ Cada cidade possui as seguintes propriedades:
 
 ### Exemplos
 
-#### Listar todas as cidades de um estado
+#### Buscar cidades por nome
 
 ```javascript
-// Filtrar cidades de São Paulo
-const cidadesSP = brasil.cidades.filter(cidade => cidade.uf === 'SP');
-console.log(`São Paulo tem ${cidadesSP.length} cidades.`);
+// Buscar cidades que contenham "São" no nome
+const cidadesSao = brasil.pesquisarCidade('São');
+console.log(`Encontradas ${cidadesSao.length} cidades com "São" no nome.`);
 
-// Exemplo: Abadia de Goiás
-console.log(cidadesSP[0]);
-```
-
-#### Encontrar uma cidade pelo nome
-
-```javascript
-const cidade = brasil.cidades.find(c => c.nome.toLowerCase() === 'rio de janeiro');
-if (cidade) {
-    console.log(`Rio de Janeiro está na região ${cidade.regiao}, DDD ${cidade.ddd}`);
+// Pegar a primeira cidade encontrada
+const primeiraCidade = brasil.pegarCidade('Rio de Janeiro');
+if (primeiraCidade) {
+    console.log(`Rio de Janeiro: ${primeiraCidade.uf}, ${primeiraCidade.regiao}`);
 }
 ```
 
-#### Obter cidades por região
+#### Buscar cidade por código IBGE
 
 ```javascript
-const cidadesNordeste = brasil.cidades.filter(c => c.regiao === 'Nordeste');
-console.log(`O Nordeste tem ${cidadesNordeste.length} cidades.`);
+// Buscar cidade pelo código IBGE de 7 dígitos
+const cidadeIBGE = brasil.pegarCidade(3304557); // Rio de Janeiro
+if (cidadeIBGE) {
+    console.log(`${cidadeIBGE.nome} - ${cidadeIBGE.estado}`);
+}
 ```
 
-#### Calcular estatísticas
+#### Buscar cidades por CEP
 
 ```javascript
-// Contar capitais
-const capitais = brasil.cidades.filter(c => c.capital);
-console.log(`Há ${capitais.length} capitais no Brasil.`);
-
-// Média de altitude das cidades
-const mediaAltitude = brasil.cidades.reduce((sum, c) => sum + c.altitude, 0) / brasil.cidades.length;
-console.log(`Altitude média: ${mediaAltitude.toFixed(2)} metros.`);
-```
-
-### Estados
-
-Além das cidades, você pode derivar informações sobre estados agrupando os dados:
-
-```javascript
-// Agrupar cidades por estado
-const estados = {};
-brasil.cidades.forEach(cidade => {
-    if (!estados[cidade.uf]) {
-        estados[cidade.uf] = {
-            nome: cidade.estado,
-            regiao: cidade.regiao,
-            cidades: []
-        };
-    }
-    estados[cidade.uf].cidades.push(cidade);
+// Buscar cidades que incluem um CEP específico
+const cidadesCEP = brasil.pesquisarCidade(20000000); // CEP do Rio de Janeiro
+cidadesCEP.forEach(cidade => {
+    console.log(`${cidade.nome} - CEP de ${cidade.cepInicial} a ${cidade.cepFinal}`);
 });
+```
 
-console.log(Object.keys(estados).length + ' estados carregados.');
+#### Encontrar cidade mais próxima por coordenadas
+
+```javascript
+// Encontrar a cidade mais próxima de uma latitude e longitude
+const cidadeProxima = brasil.cidadeProxima(-22.9068, -43.1729); // Coordenadas do Rio
+if (cidadeProxima) {
+    console.log(`Cidade mais próxima: ${cidadeProxima.nome}, ${cidadeProxima.uf}`);
+}
+```
+
+#### Obter localização atual e cidade
+
+```javascript
+// Obter a cidade baseada na localização atual (requer permissão de geolocalização)
+brasil.aqui().then(cidade => {
+    if (cidade) {
+        console.log(`Você está em ${cidade.nome}, ${cidade.estado}`);
+    } else {
+        console.log('Não foi possível determinar a localização');
+    }
+}).catch(error => {
+    console.error('Erro ao obter localização:', error);
+});
+```
+
+#### Gerar URL do Google Maps para uma cidade
+
+```javascript
+const cidade = brasil.pegarCidade('Brasília');
+if (cidade) {
+    const url = brasil.googleMapsUrl(cidade);
+    console.log(`Link para o mapa: ${url}`);
+}
+```
+
+#### Estados
+
+A biblioteca também fornece uma lista de estados:
+
+```javascript
+console.log(`Há ${brasil.estados.length} estados no Brasil.`);
+
+// Encontrar um estado por UF
+const estadoSP = brasil.estados.find(e => e.uf === 'SP');
+if (estadoSP) {
+    console.log(`Estado: ${estadoSP.nome}, UF: ${estadoSP.uf}`);
+}
 ```
 
 ## Exemplo Completo com Select2
