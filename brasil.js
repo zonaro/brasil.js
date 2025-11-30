@@ -122544,85 +122544,79 @@ window.brasil = {
 		}
 	],
 	pesquisarCidade: function (param, threshold) {
-		const cidades = this.cidades;
-		threshold = threshold || 3;
-		let numParam = null;
-		if (typeof param === 'string') {
 
-			function normalize(str) {
-				return str
-					.toLowerCase()
-					.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
-					.replace(/[^a-z0-9\s]/g, '') // remove caracteres especiais
-					.replace(/\s+/g, ' ') // normalizar espaços
-					.trim();
+		threshold = threshold || 3;
+		param = param || "";
+		param = param.toString();
+
+		function normalize(str) {
+			return str
+				.toLowerCase()
+				.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+				.replace(/[^a-z0-9\s]/g, '') // remove caracteres especiais
+				.replace(/\s+/g, ' ') // normalizar espaços
+				.trim();
+		}
+
+		param = normalize(param);
+
+		if (param.length === 8 && /^\d+$/.test(param)) {
+			// CEP
+			let numParam = parseInt(param);
+			return this.cidades.filter(c => c.cepInicial <= numParam && numParam <= c.cepFinal);
+
+		}
+		else if (param.length === 2) {
+			// IBGE ou UF estado
+			return this.cidades.filter(c => c.ibgeEstado.toString() === param || normalize(c.uf) === param);
+		}
+		else {
+
+			// Primeiro, busca cidades por nome, regiao ou ibge
+			let results = cidades.filter(c => normalize(c.nome).includes(param) || normalize(c.regiao).includes(param) || c.ibge.toString().startsWith(param));
+
+			// quando nao encontra, procura pelo nome do estado, evita conflitos quando nome da cidade e nome de estados são iguais
+			if (results.length === 0) {
+				results = cidades.filter(c => normalize(c.estado).includes(param));
 			}
 
-			param = normalize(param);
-
-			if (param.length === 8 && /^\d+$/.test(param)) {
-				// CEP
-				numParam = parseInt(param);
-				return cidades.filter(c => c.cepInicial <= numParam && numParam <= c.cepFinal);
-			} else {
-
-				// Primeiro, busca exata (contains)
-				let results = cidades.filter(c => normalize(c.nome).includes(param) ||  normalize(c.regiao).includes(param) || normalize(c.uf).includes(param) || c.ibge.toString() === param || c.ibgeEstado.toString() === param);
-
-				// quando nao encontra cidades, procura pelo nome do estado, evita conflitos quando cidades e estados tem o mesmo nome
-				if(results.length === 0) {
-					results = cidades.filter(c => normalize(c.estado).includes(param));
-				}
-
-				// Se não encontrou, usar Levenshtein
-				if (results.length === 0 && threshold > 0) {
-					function levenshtein(a, b) {
-						const matrix = [];
-						for (let i = 0; i <= b.length; i++) {
-							matrix[i] = [i];
-						}
-						for (let j = 0; j <= a.length; j++) {
-							matrix[0][j] = j;
-						}
-						for (let i = 1; i <= b.length; i++) {
-							for (let j = 1; j <= a.length; j++) {
-								if (b.charAt(i - 1) === a.charAt(j - 1)) {
-									matrix[i][j] = matrix[i - 1][j - 1];
-								} else {
-									matrix[i][j] = Math.min(
-										matrix[i - 1][j - 1] + 1,
-										matrix[i - 1][j] + 1,
-										matrix[i][j - 1] + 1
-									);
-								}
+			// Se não encontrou, usar Levenshtein no nome da cidade
+			if (results.length === 0 && threshold > 0) {
+				function levenshtein(a, b) {
+					const matrix = [];
+					for (let i = 0; i <= b.length; i++) {
+						matrix[i] = [i];
+					}
+					for (let j = 0; j <= a.length; j++) {
+						matrix[0][j] = j;
+					}
+					for (let i = 1; i <= b.length; i++) {
+						for (let j = 1; j <= a.length; j++) {
+							if (b.charAt(i - 1) === a.charAt(j - 1)) {
+								matrix[i][j] = matrix[i - 1][j - 1];
+							} else {
+								matrix[i][j] = Math.min(
+									matrix[i - 1][j - 1] + 1,
+									matrix[i - 1][j] + 1,
+									matrix[i][j - 1] + 1
+								);
 							}
 						}
-						return matrix[b.length][a.length];
-					};
+					}
+					return matrix[b.length][a.length];
+				};
 
-					const fuzzyResults = cidades.map(c => ({
-						cidade: c,
-						dist: levenshtein(normalize(c.nome), param)
-					})).filter(item => item.dist <= threshold).sort((a, b) => a.dist - b.dist);
-					results = fuzzyResults.map(item => item.cidade);
-				}
+				const fuzzyResults = this.cidades.map(c => ({
+					cidade: c,
+					dist: levenshtein(normalize(c.nome), param)
+				})).filter(item => item.dist <= threshold).sort((a, b) => a.dist - b.dist);
+				results = fuzzyResults.map(item => item.cidade);
+			}
 
-				return results;
-			}
-		} else if (typeof param === 'number') {
-			const str = param.toString();
-			if (str.length === 2) {
-				// IBGE estado
-				return cidades.filter(c => c.ibgeEstado === param);
-			} else if (str.length === 7) {
-				// IBGE cidade
-				return cidades.filter(c => c.ibge === param);
-			} else if (str.length === 8) {
-				// CEP
-				return cidades.filter(c => c.cepInicial <= param && param <= c.cepFinal);
-			}
+			return results;
 		}
-		return [];
+
+
 	},
 	pegarCidade: function (param) {
 		const resultados = this.pesquisarCidade(param);
