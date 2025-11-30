@@ -122548,38 +122548,26 @@ window.brasil = {
 		threshold = threshold || 3;
 		let numParam = null;
 		if (typeof param === 'string') {
-			const cleaned = param.replace(/[^\d]/g, ''); // remove non-digits
-			if (cleaned.length === 2 && param.length === 2 && param === param.toUpperCase()) {
-				// UF
-				return cidades.filter(c => c.capital && c.uf === param);
-			} else if (cleaned.length === 2) {
-				// IBGE estado
-				numParam = parseInt(cleaned);
-				return cidades.filter(c => c.capital && c.ibgeEstado === numParam);
-			} else if (cleaned.length === 7) {
-				// IBGE cidade
-				numParam = parseInt(cleaned);
-				return cidades.filter(c => c.ibge === numParam);
-			} else if (cleaned.length === 8) {
-				// CEP
-				numParam = parseInt(cleaned);
-				return cidades.filter(c => c.cepInicial <= numParam && numParam <= c.cepFinal);
-			} else {
-				// nome, fuzzy search
 
-				function normalize(str) {
+			function normalize(str) {
 					return str
 						.toLowerCase()
 						.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
-						.replace(/[^a-z\s]/g, '') // remove caracteres especiais e números
+						.replace(/[^a-z0-9\s]/g, '') // remove caracteres especiais
 						.replace(/\s+/g, ' ') // normalizar espaços
 						.trim();
 				}
 
-				const normalizedParam = normalize(param);
+			param = normalize(param);
+			 
+			  if (param.length === 8 && /^\d+$/.test(param)) {
+				// CEP
+				numParam = parseInt(param);
+				return cidades.filter(c => c.cepInicial <= numParam && numParam <= c.cepFinal);
+			} else {				 			
 
 				// Primeiro, busca exata (contains)
-				let results = cidades.filter(c => normalize(c.nome).includes(normalizedParam));
+				let results = cidades.filter(c => normalize(c.nome).includes(param) || normalize(c.estado).includes(param) || normalize(c.regiao).includes(param) || normalize(c.uf).includes(param) || c.ibge.toString() === param || c.ibgeEstado.toString() === param);
 
 				// Se não encontrou, usar Levenshtein
 				if (results.length === 0 && threshold > 0) {
@@ -122620,7 +122608,7 @@ window.brasil = {
 			const str = param.toString();
 			if (str.length === 2) {
 				// IBGE estado
-				return cidades.filter(c => c.capital && c.ibgeEstado === param);
+				return cidades.filter(c => c.ibgeEstado === param);
 			} else if (str.length === 7) {
 				// IBGE cidade
 				return cidades.filter(c => c.ibge === param);
