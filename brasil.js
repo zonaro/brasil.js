@@ -122686,8 +122686,16 @@ window.brasil.estados = Array.from(
 		window.brasil.cidades.map(c => [c.ibgeEstado, {
 			nome: c.estado,
 			uf: c.uf,
-			ibge: c.ibgeEstado
+			ibge: c.ibgeEstado,
+			regiao: c.regiao
 		}])
+	).values()
+);
+
+window.brasil.regioes = Array.from(
+	 // array com as regioes sem ser map duplicadas
+	new Map(
+		window.brasil.estados.map(e => [e.regiao, e.regiao])
 	).values()
 );
 
