@@ -131,6 +131,8 @@ if (estadoSP) {
 
 Aqui está um exemplo completo de uma página HTML usando Select2 para buscar cidades dinamicamente com a função pesquisarCidade, exibindo informações e mapa embedded ao selecionar.
 
+Veja o exemplo em ação: [exemplo.html](exemplo.html)
+
 ```html
 <!DOCTYPE html>
 <html lang="pt-br">
