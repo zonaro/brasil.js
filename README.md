@@ -123,7 +123,7 @@ if (estadoSP) {
 
 ## Exemplo Completo com Select2
 
-Aqui está um exemplo completo de uma página HTML usando Select2 para buscar cidades agrupadas por UF, exibindo informações e mapa embedded ao selecionar.
+Aqui está um exemplo completo de uma página HTML usando Select2 para buscar cidades dinamicamente com a função pesquisarCidade, exibindo informações e mapa embedded ao selecionar.
 
 ```html
 <!DOCTYPE html>
@@ -161,26 +161,23 @@ Aqui está um exemplo completo de uma página HTML usando Select2 para buscar ci
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Preparar dados para Select2 agrupados por UF
-            const cidadesPorEstado = {};
-            window.brasil.cidades.forEach(cidade => {
-                if (!cidadesPorEstado[cidade.uf]) {
-                    cidadesPorEstado[cidade.uf] = [];
-                }
-                cidadesPorEstado[cidade.uf].push(cidade);
-            });
-
-            const data = [];
-            Object.keys(cidadesPorEstado).sort().forEach(uf => {
-                const children = cidadesPorEstado[uf].map(c => ({ id: c.ibge, text: c.nome }));
-                data.push({ text: uf, children: children });
-            });
-
-            // Inicializar Select2 com data source
+            // Inicializar Select2 com busca dinâmica usando pesquisarCidade
             $('#cidade-select').select2({
-                data: data,
+                ajax: {
+                    transport: function (params, success, failure) {
+                        const term = params.data.term || '';
+                        const results = window.brasil.pesquisarCidade(term);
+                        success({
+                            results: results.map(c => ({ id: c.ibge, text: c.nome }))
+                        });
+                    },
+                    processResults: function (data) {
+                        return data;
+                    }
+                },
                 placeholder: 'Digite o nome da cidade...',
-                allowClear: true
+                allowClear: true,
+                minimumInputLength: 1
             });
 
             // Evento de seleção
