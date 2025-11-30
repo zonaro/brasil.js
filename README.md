@@ -134,6 +134,7 @@ Aqui está um exemplo completo de uma página HTML usando Select2 para buscar ci
 ```html
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -145,6 +146,7 @@ Aqui está um exemplo completo de uma página HTML usando Select2 para buscar ci
     <!-- Brasil.js -->
     <script src="https://cdn.jsdelivr.net/npm/brasil.js@latest/brasil.js"></script>
 </head>
+
 <body>
     <div class="container mt-5">
         <h1>Busca de Cidades do Brasil</h1>
@@ -166,15 +168,16 @@ Aqui está um exemplo completo de uma página HTML usando Select2 para buscar ci
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Inicializar Select2 com busca dinâmica usando pesquisarCidade
             $('#cidade-select').select2({
                 ajax: {
                     transport: function (params, success, failure) {
                         const term = params.data.term || '';
-                        const results = window.brasil.pesquisarCidade(term);
+                        // Pesquisa cidade com busca fuzzy de até 3 caracteres
+                        const results = window.brasil.pesquisarCidade(term, 3);
                         success({
-                            results: results.map(c => ({ id: c.ibge, text: c.nome }))
+                            results: results.map(c => ({ id: c.ibge, text: c.nome + ' - ' + c.uf }))
                         });
                     },
                     processResults: function (data) {
@@ -187,7 +190,7 @@ Aqui está um exemplo completo de uma página HTML usando Select2 para buscar ci
             });
 
             // Evento de seleção
-            $('#cidade-select').on('select2:select', function(e) {
+            $('#cidade-select').on('select2:select', function (e) {
                 const ibge = e.params.data.id;
                 const cidade = window.brasil.pegarCidade(ibge);
                 if (cidade) {
@@ -211,12 +214,13 @@ Aqui está um exemplo completo de uma página HTML usando Select2 para buscar ci
             });
 
             // Evento de limpar
-            $('#cidade-select').on('select2:clear', function() {
+            $('#cidade-select').on('select2:clear', function () {
                 $('#cidade-card').hide();
             });
         });
     </script>
 </body>
+
 </html>
 ```
 
