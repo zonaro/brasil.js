@@ -1,4 +1,4 @@
-# brasil.js
+# cidades_brasil.js
 
 Biblioteca JavaScript com dados completos de todas as cidades e estados do Brasil, incluindo informações geográficas, códigos IBGE, CEPs e muito mais.
 
@@ -9,7 +9,7 @@ Biblioteca JavaScript com dados completos de todas as cidades e estados do Brasi
 Inclua o script diretamente no seu HTML:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/zonaro/brasil.js@master/brasil.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/zonaro/cidades_brasil.js@master/cidades_brasil.js"></script>
 ```
 
 Isso carregará a biblioteca globalmente, tornando o objeto `window.brasil` disponível.
@@ -140,13 +140,13 @@ Veja o exemplo em ação: [exemplo.html](exemplo.html)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exemplo Brasil.js com Select2</title>
+    <title>Exemplo cidades_brasil.js com Select2</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <!-- Brasil.js -->
-    <script src="https://cdn.jsdelivr.net/npm/brasil.js@latest/brasil.js"></script>
+    <!-- cidades_brasil.js -->
+    <script src="https://cdn.jsdelivr.net/npm/cidades_brasil.js@latest/cidades_brasil.js"></script>
 </head>
 
 <body>
@@ -260,7 +260,7 @@ Este exemplo cria um select dropdown com cidades agrupadas por UF, permite busca
 
 ## Contribuição
 
-Contribuições são bem-vindas! Abra uma issue ou envie um pull request no [GitHub](https://github.com/zonaro/brasil.js).
+Contribuições são bem-vindas! Abra uma issue ou envie um pull request no [GitHub](https://github.com/zonaro/cidades_brasil.js).
 
 ## Licença
 

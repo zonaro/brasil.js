@@ -122697,4 +122697,4 @@ window.brasil.regioes = Array.from(
 	).values()
 );
 
-console.log('Brasil.js carregado');
+console.log('cidades_brasil.js carregado');
