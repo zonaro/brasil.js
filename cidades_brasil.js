@@ -122635,7 +122635,7 @@ window.brasil = {
 		}
 		// Converter para número se for string
 		const latitude = parseFloat(lat);
-		const longitude = parseFloat(lng);	 
+		const longitude = parseFloat(lng);
 		let minDist = Infinity;
 		let closest = null;
 		this.cidades.forEach(c => {
