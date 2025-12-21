@@ -41,6 +41,102 @@ Cada cidade possui as seguintes propriedades:
 - `codigoGeograficoSubdivisao`: Código geográfico da subdivisão
 - `codigoGeograficoDistrito`: Código geográfico do distrito
 
+## Funções Disponíveis ✅
+
+A biblioteca expõe várias funções úteis no objeto global `window.brasil`. Abaixo está a documentação das funções públicas (as funções que começam com `__` são internas e não documentadas aqui).
+
+### `pesquisarCidade(param, threshold)` 🔎
+
+- **Descrição:** Busca cidades por nome, CEP, código IBGE (cidade ou estado), UF ou região. Quando não encontra uma correspondência direta, tenta buscar pelo nome do estado e, em último caso, aplica busca *fuzzy* (Levenshtein) com limite definido por `threshold`.
+- **Parâmetros:**
+  - `param` (string|number) — Texto ou número para busca (nome da cidade, CEP de 8 dígitos, código IBGE, UF, etc.).
+  - `threshold` (number, opcional, padrão `3`) — Distância máxima de Levenshtein para comparação *fuzzy*.
+- **Retorno:** `Array` de objetos cidade (pode ser vazio se nada for encontrado).
+- **Exemplo:**
+```javascript
+const cidades = brasil.pesquisarCidade('São');
+const porCep = brasil.pesquisarCidade(20000000); // busca por CEP
+```
+
+### `pegarCidade(param)` 👉
+
+- **Descrição:** Retorna a primeira cidade encontrada usando a mesma lógica de busca de `pesquisarCidade` ou `null` se não houver resultados.
+- **Parâmetros:** `param` (string|number) — Mesmo formato de `pesquisarCidade`.
+- **Retorno:** objeto cidade ou `null`.
+- **Exemplo:**
+```javascript
+const cidade = brasil.pegarCidade('Rio de Janeiro');
+if (cidade) console.log(cidade.uf, cidade.regiao);
+```
+
+### `pesquisarEstado(param, threshold)` 🗺️
+
+- **Descrição:** Busca estados por nome, região, UF ou código IBGE (2 dígitos). Se não houver correspondência direta, aplica busca *fuzzy* com o `threshold` informado.
+- **Parâmetros:**
+  - `param` (string|number) — Nome do estado, UF ou código IBGE (2 dígitos).
+  - `threshold` (number, opcional) — Limite para busca *fuzzy* (padrão `3`).
+- **Retorno:** `Array` de objetos estado.
+- **Exemplo:**
+```javascript
+const estados = brasil.pesquisarEstado('SP');
+```
+
+### `pegarEstado(param)` 👉
+
+- **Descrição:** Retorna o primeiro estado correspondente à busca ou `null` se nada for encontrado.
+- **Parâmetros:** `param` (string|number)
+- **Retorno:** objeto estado ou `null`.
+
+### `cidadeProxima(lat, lng)` 📍
+
+- **Descrição:** Calcula a cidade mais próxima a partir de coordenadas (usa a fórmula de Haversine para distância em km).
+- **Parâmetros:**
+  - `lat` (number|string) — Latitude.
+  - `lng` (number|string) — Longitude.
+- **Retorno:** objeto cidade mais próxima.
+- **Exemplo:**
+```javascript
+const proxima = brasil.cidadeProxima(-22.9068, -43.1729);
+```
+
+### `aqui()` 🌐
+
+- **Descrição:** Função assíncrona que obtém a localização do usuário via Geolocation API e retorna a cidade mais próxima.
+- **Parâmetros:** nenhum
+- **Retorno:** `Promise` que resolve em um objeto cidade ou `null`. A promise é rejeitada se a geolocalização não for suportada ou o usuário negar a permissão.
+- **Exemplo:**
+```javascript
+brasil.aqui().then(cidade => { /* ... */ }).catch(err => { /* ... */ });
+```
+
+### `googleMapsUrl(cidade)` 🔗
+
+- **Descrição:** Gera uma URL do Google Maps para as coordenadas da cidade (`https://maps.google.com/maps?q=lat,long`). Retorna `null` se latitude/longitude não estiverem disponíveis.
+- **Parâmetros:** `cidade` (objeto cidade com `latitude` e `longitude`)
+- **Retorno:** `string` URL ou `null`.
+
+### `googleMapsEmbedded(cidade, width, height)` 🧭
+
+- **Descrição:** Gera um elemento `<iframe>` pronto para inserir no DOM com o mapa embutido (embed). `width` e `height` têm valores padrão de `600x450` se não fornecidos.
+- **Parâmetros:**
+  - `cidade` (objeto cidade)
+  - `width` (number, opcional)
+  - `height` (number, opcional)
+- **Retorno:** `HTMLIFrameElement` ou `null` se coordenadas forem inválidas.
+- **Exemplo:**
+```javascript
+const iframe = brasil.googleMapsEmbedded(cidade, 600, 400);
+document.getElementById('mapa').appendChild(iframe);
+```
+
+**Propriedades úteis:**
+
+- `brasil.cidades` — `Array` com todas as cidades.
+- `brasil.estados` — `Array` com os estados (gerado automaticamente a partir de `cidades`).
+- `brasil.regioes` — `Array` com as regiões sem duplicatas.
+
+> ⚠️ Observação: Funções internas que começam com `__` (por exemplo `__levenshtein`, `__normalize`) são privadas e não fazem parte da API pública documentada aqui.
+
 
 ### Exemplos
 
@@ -120,12 +216,47 @@ A biblioteca também fornece uma lista de estados:
 ```javascript
 console.log(`Há ${brasil.estados.length} estados no Brasil.`);
 
-// Encontrar um estado por UF
-const estadoSP = brasil.estados.find(e => e.uf === 'SP');
-if (estadoSP) {
-    console.log(`Estado: ${estadoSP.nome}, UF: ${estadoSP.uf}`);
+```
+
+
+#### Buscar estados (`pesquisarEstado` / `pegarEstado`)
+
+```javascript
+// Buscar por UF
+const estadosSP = brasil.pesquisarEstado('SP');
+console.log(estadosSP);
+
+// Buscar por código IBGE de 2 dígitos (ex: 35 para São Paulo)
+const estadosByIbge = brasil.pesquisarEstado(35);
+console.log(estadosByIbge);
+
+// Pegar o primeiro resultado (ou null)
+const primeiroEstado = brasil.pegarEstado('SP');
+console.log(primeiroEstado);
+
+// Busca fuzzy: caso o nome esteja escrito com erro, ajustar threshold
+const fuzzy = brasil.pesquisarEstado('Sao Paulo', 2);
+console.log(fuzzy);
+```
+
+#### Regiões e listas úteis
+
+```javascript
+console.log('Regiões:', brasil.regioes); // lista de regiões sem duplicatas
+console.log('Total de cidades:', brasil.cidades.length);
+```
+
+#### Gerar IFrame do Google Maps (`googleMapsEmbedded`)
+
+```javascript
+const brasilia = brasil.pegarCidade('Brasília');
+if (brasilia) {
+    // Retorna um HTMLIFrameElement pronto para inserir no DOM
+    const iframe = brasil.googleMapsEmbedded(brasilia, 800, 600);
+    if (iframe) document.getElementById('mapa-container').appendChild(iframe);
 }
 ```
+
 
 ## Exemplo Completo com Select2
 
@@ -257,6 +388,7 @@ Veja o exemplo em ação: [exemplo.html](exemplo.html)
 ```
 
 Este exemplo cria um select dropdown com cidades agrupadas por UF, permite busca e seleção, e exibe um card com detalhes da cidade selecionada, incluindo um mapa embedded.
+
 
 ## Contribuição
 
